@@ -8,6 +8,10 @@ void command_init() {
   cmd_map = hashmap_new();
 
   SET_CMD("sayhi", cmd_say_hi);
+
+  SET_CMD("join", cmd_join_chan);
+  SET_CMD("part", cmd_part_chan);
+  SET_CMD("setadmin", cmd_add_admin);
 }
 
 /* TODO: this is incredibly messy, and needs to be cleaned up */
@@ -95,10 +99,45 @@ void command_handle_msg(irc_server_t* irc, char* msg) {
   }
 }
 
+/* shorthand for commands that require admin privs */
+#define REQUIRES_AUTH                     \
+  if(!irc_is_admin(*msg.irc, msg.nick)) { \
+    cmd_notadmin(msg);                    \
+    return;                               \
+  }
+
 void cmd_nofunc(message_t msg) {
   irc_privmsg(*msg.irc, msg.chan, "I don't know that command");
 }
 
+void cmd_notadmin(message_t msg) {
+  irc_privmsg(*msg.irc, msg.chan, "You must be an admin to do that!");
+}
+
 void cmd_say_hi(message_t msg) {
-  irc_privmsg(*msg.irc, msg.chan, "Hello there! :D");
+  irc_privmsgf(*msg.irc, msg.chan, "%s: Hai there! :D", msg.nick);
+}
+
+void cmd_join_chan(message_t msg) {
+  REQUIRES_AUTH;
+ 
+  irc_join(*msg.irc, msg.args);  
+}
+
+void cmd_part_chan(message_t msg) {
+  REQUIRES_AUTH;
+  
+  irc_part(*msg.irc, msg.args);
+}
+
+void cmd_add_admin(message_t msg) {
+  REQUIRES_AUTH;
+  
+  if(!msg.args) {
+    irc_privmsg(*msg.irc, msg.chan, "You need to specify a nick to make an admin");
+    return;
+  }
+
+  irc_add_admin(msg.irc, msg.args);
+  irc_privmsgf(*msg.irc, msg.chan, "%s is now an admin", msg.args);
 }

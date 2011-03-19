@@ -27,7 +27,17 @@ void command_init();
 /* pass the message along to the proper commands */
 void command_handle_msg(irc_server_t* irc, char* msg);
 
+/* commands */
 void cmd_say_hi(message_t msg);
+
+/* admin commands */
+void cmd_join_chan(message_t msg);
+void cmd_part_chan(message_t msg);
+void cmd_add_admin(message_t msg);
+
+/* errors */
 void cmd_nofunc(message_t msg);
+void cmd_notadmin(message_t msg);
+
 
 #endif /* _COMMAND_H_ */

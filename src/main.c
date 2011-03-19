@@ -5,6 +5,8 @@ int main(void) {
   command_init();
 
   irc_server_t irc = connect_to_server("irc.ninthbit.net", 6667, "inari");
+  irc_add_admin(&irc, "boredomist");
+  irc_add_admin(&irc, "someone_else");
 
   if(irc.status == CLOSED) {
     LOG("ERROR: Connect failed, aborting");

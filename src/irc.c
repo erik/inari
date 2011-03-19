@@ -45,8 +45,43 @@ irc_server_t connect_to_server(char* server, int port, char* nick) {
   irc.socketfd = sockfd;
   irc.status = AUTH;
   irc.nick = nick;
+  irc.num_admins = 0;
+  irc.admins = malloc(0);
 
   return irc;
+}
+
+void irc_add_admin(irc_server_t* irc, char* nick) {
+  LOG("Adding admin '%s'", nick);
+
+  if(irc_is_admin(*irc, nick)) {
+    LOG("'%s' is already an admin, ignoring.", nick);
+    return;
+  }
+
+  unsigned num = irc->num_admins += 1;
+
+  /* allow variables that will go out of scope or be overwritten to be set as admins */
+  char* nick_cpy = malloc(strlen(nick));
+  nick_cpy = strcpy(nick_cpy, nick);
+
+  irc->admins = realloc(irc->admins, sizeof(char*) * num);
+  irc->admins[num - 1] = nick_cpy;
+}
+
+int irc_is_admin(irc_server_t irc, char* nick) {
+  if(!irc.num_admins) {
+    return 0;
+  }
+
+  unsigned i;
+  for(i = 0; i < irc.num_admins; ++i) {
+    if(!strcmp(nick, irc.admins[i])) {
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
 void irc_handle(irc_server_t* irc) {
@@ -99,18 +134,12 @@ void irc_handle_msg(irc_server_t* irc, char* msg) {
 void irc_authenticate(irc_server_t irc, char* pass) {
   LOG("Authenticating with server");
 
-  char* nickmsg = malloc(strlen(irc.nick) + 5);
-  strcpy(nickmsg, "NICK ");
-  strcat(nickmsg, irc.nick);
-
-  irc_send(irc, nickmsg);
-  irc_send(irc, "USER inari * * :inari");
+  irc_sendf(irc, "NICK %s", irc.nick);
+  irc_sendf(irc, "USER %s * * :inari", irc.nick);
 
   if(pass) {
     irc_privmsg(irc, "NickServ IDENTIFY", pass);
   }
-
-  free(nickmsg);
 }
 
 int irc_send(irc_server_t irc, char* msg) {
@@ -126,29 +155,36 @@ int irc_send(irc_server_t irc, char* msg) {
   return size;
 }
 
+int irc_sendf(irc_server_t irc, char* fmt, ...) {
+  char buf[0x1000];
+  va_list args;
+  va_start(args, fmt);
+
+  vsnprintf(buf, 0x1000, fmt, args);
+
+  va_end(args);
+  return len =  irc_send(irc, buf);
+}
+
 void irc_join(irc_server_t irc, char* chan) {
-  unsigned len = strlen(chan);
-  char* msg = malloc(5 + len);
+  irc_sendf(irc, "JOIN %s", chan);
+}
 
-  strcpy(msg, "JOIN ");
-  strcat(msg, chan);
-
-  irc_send(irc, msg);
-  free(msg);
-  return;
+void irc_part(irc_server_t irc, char* chan) {
+  irc_sendf(irc, "PART %s", chan);
 }
 
 int irc_privmsg(irc_server_t irc, char* where, char* msg) {
-  /* TODO: this is a mess */
-  char* cmd = "PRIVMSG ";
-  char* snd = malloc(strlen(where) + strlen(msg) + strlen(cmd));
+  return irc_sendf(irc, "PRIVMSG %s :%s", where, msg);
+}
 
-  strcpy(snd, cmd);
-  strcat(snd, where);
-  strcat(snd, " :");
-  strcat(snd, msg);
-
-  int size = irc_send(irc, snd);
-  free(snd);
-  return size;
+int irc_privmsgf(irc_server_t irc, char* chan, char* fmt, ...) {
+  char buf[0x1000];
+  va_list args;
+  va_start(args, fmt);
+  
+  vsnprintf(buf, 0x1000, fmt, args);
+  
+  va_end(args);
+  return irc_privmsg(irc, chan, buf);
 }
