@@ -13,15 +13,21 @@ EXE := inari
 all: $(BUILD_DIR) $(COBJ) $(EXE)
 
 $(EXE): 
-	@ echo "  LINK" $<
-	$(CC) $(CFLAGS) $(LNFLAGS) $(COBJ) -o $(EXE)
+	@ echo "  LINK" $(EXE)
+	@ $(CC) $(CFLAGS) $(LNFLAGS) $(COBJ) -o $(EXE)
 
 %.o: %.c
 	@ echo "  CC" $<
-	$(CC) $(CFLAGS) -c $< -o $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
 
 debug:
 	@$(MAKE) "CFLAGS=$(CFLAGS) -g"
+
+gcc:
+	@$(MAKE) "CC=gcc"
+
+clang:
+	@$(MAKE) "CC=clang"
 
 clean:
 	rm -f $(COBJ) $(EXE)
@@ -29,4 +35,4 @@ clean:
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-.PHONY=all clean debug
+.PHONY=all clean debug gcc
