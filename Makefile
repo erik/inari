@@ -5,14 +5,24 @@ COBJ := $(CSRC:.c=.o)
 
 CC := clang
 CFLAGS := -Wall -Wextra -pedantic -std=c99 -Iinclude/
-LNFLAGS := 
+LNFLAGS := -ldl -rdynamic
 EXE := inari
 
 ###
 
-all: $(BUILD_DIR) $(COBJ) $(EXE)
+all: $(COBJ) $(EXE) plugs install
 
-$(EXE): 
+install:
+	@ mkdir -p ~/.inari
+	@ echo "Copying .inari => ~/.inari/"
+	@ cp -r .inari/* ~/.inari/
+
+plugs:
+	@ mkdir -p .inari/native
+	@ cd plugins; $(MAKE) all
+	@ cp plugins/*.so .inari/native/
+
+$(EXE): $(COBJ)
 	@ echo "  LINK" $(EXE)
 	@ $(CC) $(CFLAGS) $(LNFLAGS) $(COBJ) -o $(EXE)
 
@@ -31,8 +41,6 @@ clang:
 
 clean:
 	rm -f $(COBJ) $(EXE)
-
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	cd plugins; make clean
 
 .PHONY=all clean debug gcc

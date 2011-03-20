@@ -1,4 +1,5 @@
 #include "command.h"
+#include "plugin.h"
 
 hashmap_t* cmd_map;
 
@@ -6,6 +7,8 @@ hashmap_t* cmd_map;
 
 void command_init() {
   cmd_map = hashmap_new();
+
+  init_plugins(cmd_map);
 
   SET_CMD("sayhi", cmd_say_hi);
 
@@ -103,13 +106,6 @@ void command_handle_msg(irc_server_t* irc, char* msg) {
     return;
   }
 }
-
-/* shorthand for commands that require admin privs */
-#define REQUIRES_AUTH                     \
-  if(!irc_is_admin(*msg.irc, msg.nick)) { \
-    cmd_notadmin(msg);                    \
-    return;                               \
-  }
 
 void cmd_nofunc(message_t msg) {
   irc_privmsg(*msg.irc, msg.chan, "I don't know that command");

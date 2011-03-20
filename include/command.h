@@ -6,6 +6,13 @@
 
 #define COMMAND_PREFIX '@'
 
+/* shorthand for commands that require admin privs */
+#define REQUIRES_AUTH                     \
+  if(!irc_is_admin(*msg.irc, msg.nick)) { \
+    cmd_notadmin(msg);                    \
+    return;                               \
+  }
+
 enum action {
   ACT_PRIVMSG,
   ACT_JOIN,
