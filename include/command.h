@@ -24,6 +24,9 @@ typedef struct message {
 /* intialize all the required commands */
 void command_init();
 
+/* do whatever is required to the commands on program shutdown */
+void command_deinit();
+
 /* pass the message along to the proper commands */
 void command_handle_msg(irc_server_t* irc, char* msg);
 
@@ -34,6 +37,7 @@ void cmd_say_hi(message_t msg);
 void cmd_join_chan(message_t msg);
 void cmd_part_chan(message_t msg);
 void cmd_add_admin(message_t msg);
+void cmd_quit(message_t msg);
 
 /* errors */
 void cmd_nofunc(message_t msg);

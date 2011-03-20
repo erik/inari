@@ -11,7 +11,12 @@ void command_init() {
 
   SET_CMD("join", cmd_join_chan);
   SET_CMD("part", cmd_part_chan);
+  SET_CMD("quit", cmd_quit);
   SET_CMD("setadmin", cmd_add_admin);
+}
+
+void command_deinit() {
+  hashmap_destroy(cmd_map);
 }
 
 /* TODO: this is incredibly messy, and needs to be cleaned up */
@@ -140,4 +145,12 @@ void cmd_add_admin(message_t msg) {
 
   irc_add_admin(msg.irc, msg.args);
   irc_privmsgf(*msg.irc, msg.chan, "%s is now an admin", msg.args);
+}
+
+void cmd_quit(message_t msg) {
+  REQUIRES_AUTH;
+
+  irc_send(*msg.irc, "QUIT :Ack, I am slain!");
+
+  msg.irc->status = CLOSED;
 }

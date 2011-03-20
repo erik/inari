@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define LOG_EVENTS
 
@@ -43,6 +44,9 @@ typedef struct irc_server {
 
 /* if returned server has a status of CLOSED, creation failed for some reason */
 irc_server_t connect_to_server(char* server, int port, char* nick);
+
+/* closes out all connections, frees any applicable memory */
+void irc_destroy(irc_server_t *irc);
 
 /* adds a nick to the list of admin level users */
 void irc_add_admin(irc_server_t* irc, char* nick);

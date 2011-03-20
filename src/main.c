@@ -21,9 +21,12 @@ int main(void) {
 
   irc_join(irc, "#tempchan");
 
-  do {
+  while(irc.status == CONN) {
     irc_handle(&irc);
-  } while (irc.status == CONN);
+  }
+
+  irc_destroy(&irc);
+  command_deinit();
 
   return 0;
 }

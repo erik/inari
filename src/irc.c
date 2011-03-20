@@ -51,6 +51,19 @@ irc_server_t connect_to_server(char* server, int port, char* nick) {
   return irc;
 }
 
+void irc_destroy(irc_server_t *irc) {
+  /* close socket */
+  if(irc->socketfd)
+    close(irc->socketfd);
+
+  /* free all malloc'd admin nicks */
+  unsigned i;
+  for(i = 0; i < irc->num_admins; ++i) {
+    free(irc->admins[i]);
+  }
+  free(irc->admins);
+}
+
 void irc_add_admin(irc_server_t* irc, char* nick) {
   LOG("Adding admin '%s'", nick);
 
@@ -65,7 +78,7 @@ void irc_add_admin(irc_server_t* irc, char* nick) {
   char* nick_cpy = malloc(strlen(nick));
   nick_cpy = strcpy(nick_cpy, nick);
 
-  irc->admins = realloc(irc->admins, sizeof(char*) * num);
+  irc->admins  = realloc(irc->admins, sizeof(char*) * num);
   irc->admins[num - 1] = nick_cpy;
 }
 
@@ -152,6 +165,7 @@ int irc_send(irc_server_t irc, char* msg) {
 
   int size = send(irc.socketfd, snd, strlen(snd), 0);
   free(snd);
+  snd = NULL;
   return size;
 }
 
@@ -163,7 +177,7 @@ int irc_sendf(irc_server_t irc, char* fmt, ...) {
   vsnprintf(buf, 0x1000, fmt, args);
 
   va_end(args);
-  return len =  irc_send(irc, buf);
+  return irc_send(irc, buf);
 }
 
 void irc_join(irc_server_t irc, char* chan) {
