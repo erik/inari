@@ -165,7 +165,6 @@ int irc_send(irc_server_t irc, char* msg) {
 
   int size = send(irc.socketfd, snd, strlen(snd), 0);
   free(snd);
-  snd = NULL;
   return size;
 }
 

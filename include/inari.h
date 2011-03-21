@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define LOG_EVENTS
+#define LOG_EVENTS 1
 
 #ifdef LOG_EVENTS
 /* prints date stamp as well as format specified */

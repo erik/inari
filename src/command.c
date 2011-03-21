@@ -86,8 +86,16 @@ void command_handle_msg(irc_server_t* irc, char* msg) {
     LOG("Unhandled action: %s", action);
     return;
   }
+  
+  /* strip leading whitespace */
+  unsigned s = strspn(msg, " \r\n");
+  msg += s;
 
   char* args = msg;
+
+  if(args && msg[0] == '\0') {
+    args = NULL;
+  }
 
   message.irc = irc;
   message.action = act;

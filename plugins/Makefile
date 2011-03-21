@@ -15,6 +15,9 @@ clean:
 	rm -f $(COBJ)
 	rm -f $(PLUGINS)
 
+debug:
+	@$(MAKE) "CFLAGS=$(CFLAGS) -g -O0"
+
 %.o: %.c
 	@ echo "   CC " $<
 	@ $(CC) $(CFLAGS) -c $< -o $@
@@ -23,4 +26,4 @@ clean:
 	@ echo "   LINK " $<
 	@ ld $< $(LNFLAGS) -soname $@ -o $@
 
-.PHONY=clean
+.PHONY=clean debug

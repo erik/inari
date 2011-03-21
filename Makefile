@@ -31,7 +31,8 @@ $(EXE): $(COBJ)
 	@ $(CC) $(CFLAGS) -c $< -o $@
 
 debug:
-	@$(MAKE) "CFLAGS=$(CFLAGS) -g"
+	@ cd plugins; make debug
+	@$(MAKE) "CFLAGS=$(CFLAGS) -g -O0"
 
 gcc:
 	@$(MAKE) "CC=gcc"

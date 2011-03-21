@@ -31,6 +31,9 @@ void cmd_exec(message_t msg) {
        irc_privmsgf(*msg.irc, msg.chan, "%s: (output too long, aborting)", msg.nick);
        break;
      }
+     /* get rid of trailing newline */
+     line[strlen(line) - 1] = '\0';
+
      irc_privmsgf(*msg.irc, msg.chan, "%s: %s", msg.nick, line);
    }
 

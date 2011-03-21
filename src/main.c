@@ -1,31 +1,31 @@
 #include "inari.h"
 #include "command.h"
+#include "config.h"
 
 int main(void) {
-  command_init();
+  irc_server_t* irc;
+  config_t* conf;
 
-  irc_server_t irc = connect_to_server("irc.ninthbit.net", 6667, "inari");
-  irc_add_admin(&irc, "boredomist");
-  irc_add_admin(&irc, "someone_else");
+  char buf[256];
+  snprintf(buf, 256, "%s/.inari/inari.cfg", getenv("HOME"));
 
-  if(irc.status == CLOSED) {
-    LOG("ERROR: Connect failed, aborting");
+  conf = config_load(buf);
+  if(conf->num_configs <= 0) {
+    LOG("No configurations found, aborting");
     exit(EXIT_FAILURE);
   }
 
-  irc_authenticate(irc, NULL);
+  command_init();
+  irc = config_create_irc(conf->configs[0]);
   
-  while(irc.status == AUTH) {
-    irc_handle(&irc);
+  config_destroy(conf);
+
+  while(irc->status == CONN) {
+    irc_handle(irc);
   }
-
-  irc_join(irc, "#tempchan");
-
-  while(irc.status == CONN) {
-    irc_handle(&irc);
-  }
-
-  irc_destroy(&irc);
+  
+  irc_destroy(irc);
+  free(irc);
   command_deinit();
 
   return 0;
