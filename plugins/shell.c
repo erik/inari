@@ -18,7 +18,6 @@ void cmd_exec(message_t msg) {
   /* limit number of lines allowed to be printed */
   unsigned lines = 0;
   
-  /* TODO: clang complains about popen and pclose being implicitly defined */
   f = (FILE*)popen(msg.args, "r");
 
   if (!f) {

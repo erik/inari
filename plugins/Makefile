@@ -6,7 +6,7 @@ COBJ := $(CSRC:.c=.o)
 PLUGINS := $(CSRC:.c=.so)
 
 CC := clang
-CFLAGS := -Wall -Wextra -pedantic -std=c99 -I../include/ -fPIC
+CFLAGS := -Wall -Wextra -pedantic -std=gnu99 -I../include/ -fPIC
 LNFLAGS := -shared
 
 all: $(COBJ) $(PLUGINS)
