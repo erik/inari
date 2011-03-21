@@ -42,6 +42,6 @@ clang:
 
 clean:
 	rm -f $(COBJ) $(EXE)
-	cd plugins; make clean
+	@ cd plugins; make clean
 
 .PHONY=all clean debug gcc

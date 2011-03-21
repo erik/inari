@@ -11,6 +11,7 @@ static server_config_t* load_default_config() {
   conf->num_channels = 0;
   conf->admins = NULL;
   conf->num_admins = 0;
+  conf->echo = 1;
 
   return conf;
 }
@@ -59,7 +60,7 @@ config_t* config_load(char* filename) {
       unsigned len = strcspn(line, "]");
       line[len] = '\0';
 
-      LOG("Found configuration: '%s'", line);
+      LOG("Loading configuration: '%s'", line);
 
       cur = load_default_config();
       
@@ -138,6 +139,18 @@ config_t* config_load(char* filename) {
 
           pch = strtok(NULL, " \n");
         }
+      } EIF("echo") {
+        char echo = line[0];
+        if(echo == 'y') {
+          cur->echo = 1;
+        } else if(echo == 'n') {
+          cur->echo = 0;
+        } else {
+          LOG("Expected a value of [yn] on line %d, got: %s", line_num, line);
+          config->status = 1;
+          goto out;
+        }
+        
       } else {
         LOG("Unrecognized setting on line %d: '%s'", line_num, setting);
         config->status = 1;
@@ -160,7 +173,10 @@ config_t* config_load(char* filename) {
 irc_server_t* config_create_irc(server_config_t* config) {
   irc_server_t *irc = malloc(sizeof(irc_server_t));
   
+  /* TODO: probable memory leak here */
   *irc = connect_to_server(config->server_url, config->port, config->nick);
+
+  irc->echo = config->echo;
 
   if(irc->status == CLOSED) {
     LOG("ERROR: Connect to %s failed!", config->server_name);

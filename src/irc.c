@@ -112,8 +112,9 @@ void irc_handle(irc_server_t* irc) {
   /* get rid of \r\n bit */
   buffer[len - 2] = '\0';
 
-  /* TODO: allow user to turn echo on or off for a specific server */
-  LOG("<< %s", buffer);
+  if(irc->echo) {
+    LOG("<< %s", buffer);
+  }
 
   switch(irc->status) {
   case AUTH:
@@ -156,7 +157,9 @@ void irc_authenticate(irc_server_t irc, char* pass) {
 }
 
 int irc_send(irc_server_t irc, char* msg) {
-  LOG(">> %s", msg);
+  if(irc.echo) {
+    LOG(">> %s", msg);
+  }
   unsigned len = strlen(msg);
   char* snd = malloc(len + 2);
 

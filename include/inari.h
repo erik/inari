@@ -38,6 +38,7 @@ typedef struct irc_server {
   int socketfd;
   enum server_status status;
   unsigned num_admins;
+  unsigned echo;
   char** admins;
   char* nick;
 } irc_server_t;

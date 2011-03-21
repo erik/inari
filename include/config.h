@@ -14,6 +14,7 @@ typedef struct server_config {
   unsigned num_channels;
   char** admins;
   unsigned num_admins;
+  unsigned echo;
 } server_config_t;
 
 typedef struct config {
