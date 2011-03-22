@@ -10,7 +10,7 @@
 #include <string.h>
 #include <errno.h>
 
-void plugin_init(hashmap_t* map);
+void plugin_init(command_handle_t*);
 
 void cmd_exec(message_t msg);
 

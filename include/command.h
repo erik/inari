@@ -19,6 +19,11 @@ enum action {
   ACT_PART
 };
 
+enum command_type {
+  CMD_BUILTIN,
+  CMD_NATIVE
+};
+
 typedef struct message {
   irc_server_t* irc;
   enum action action;
@@ -27,6 +32,13 @@ typedef struct message {
   char* cmd;
   char* args;
 } message_t;
+
+typedef struct command_handle {
+  void (*fcn)(message_t);
+  enum command_type type;
+  char* name;
+  void* ptr;
+} command_handle_t;
 
 /* intialize all the required commands */
 void command_init();

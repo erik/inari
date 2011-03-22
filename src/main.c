@@ -20,7 +20,7 @@ int main(void) {
   
   config_destroy(conf);
 
-  while(irc->status == CONN) {
+   while(irc->status == CONN) {
     irc_handle(irc);
   }
   

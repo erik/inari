@@ -1,4 +1,5 @@
 #include "plugin.h"
+#include "command.h"
 
 char plugin_dir[0x400];
 unsigned num;
@@ -13,14 +14,20 @@ static void load_plugin(hashmap_t* map, char* name) {
     return;
   }
   
-  void (*init_ptr)(hashmap_t*) = (void (*)(hashmap_t*))dlsym(handle, "plugin_init");
+  void (*init_ptr)(command_handle_t*) = (void (*)(command_handle_t*))dlsym(handle, "plugin_init");
   if(!init_ptr) {
     LOG("Couldn't load init_plugin for %s: %s", plugin_file, dlerror());
     return;
   }
 
+  command_handle_t* h = malloc(sizeof(command_handle_t));
+  h->type = CMD_NATIVE;
+  h->ptr = handle;
+
   /* allow the plugin to set itself up */
-  init_ptr(map);
+  init_ptr(h);
+
+  hashmap_insert(map, h->name, (void*)h);
 
   LOG(">> Loaded plugin %s", name);
   num++;

@@ -1,8 +1,8 @@
 #include "shell.h"
 
-void plugin_init(hashmap_t* map) {
-  hashmap_insert(map, "sh", (void*)cmd_exec);
-  hashmap_insert(map, "shell", (void*)cmd_exec);
+void plugin_init(command_handle_t* handle) {
+  handle->name = "sh";
+  handle->fcn = cmd_exec;
 }
 
 void cmd_exec(message_t msg) {

@@ -3,7 +3,11 @@
 
 hashmap_t* cmd_map;
 
-#define SET_CMD(str, fcn) hashmap_insert(cmd_map, str, (void*)fcn)
+#define SET_CMD(str, f) {                                               \
+    command_handle_t* h = malloc(sizeof(command_handle_t));             \
+    h->fcn = f; h->type = CMD_BUILTIN; h->name = str; h->ptr = NULL;    \
+    hashmap_insert(cmd_map, str, (void*)h);                             \
+  }
 
 void command_init() {
   cmd_map = hashmap_new();
@@ -18,7 +22,29 @@ void command_init() {
   SET_CMD("setadmin", cmd_add_admin);
 }
 
+static void free_cmd(hashnode_t* node) {
+  if(!node) {
+    return;
+  }
+
+  free_cmd(node->left);
+  free_cmd(node->right);
+
+  command_handle_t* h = (command_handle_t*)node->data;
+  switch(h->type) {
+  case CMD_BUILTIN:
+    break;
+  case CMD_NATIVE:
+    dlclose(h->ptr);
+    break;
+  }
+  free(h);
+}
+
 void command_deinit() {
+  hashnode_t* node = cmd_map->root;
+
+  free_cmd(node);
   hashmap_destroy(cmd_map);
 }
 
@@ -105,9 +131,14 @@ void command_handle_msg(irc_server_t* irc, char* msg) {
   message.args = args;
 
   if(cmd) {
-    void (*fcn)(message_t) = (void (*)(message_t))hashmap_get(cmd_map, cmd);
-    if(fcn) {
-      fcn(message);
+    command_handle_t* handle = hashmap_get(cmd_map, cmd);
+    if(handle) {
+      switch(handle->type) {
+      case CMD_BUILTIN:
+      case CMD_NATIVE:
+        handle->fcn(message);
+        break;
+      }
     } else {
       cmd_nofunc(message);
     }
