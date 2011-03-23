@@ -2,3 +2,4 @@
 inari
 *.so
 lua-5.1.4/
+.inari/lua/*
