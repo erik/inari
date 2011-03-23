@@ -15,10 +15,15 @@ void cmd_exec(message_t msg) {
 
   FILE *f;
   char line[256];
+  char cmd[0x400];
+  
+  strcpy(cmd, "2>&1 ");
+  strcat(cmd, msg.args);
+  
   /* limit number of lines allowed to be printed */
   unsigned lines = 0;
   
-  f = (FILE*)popen(msg.args, "r");
+  f = (FILE*)popen(cmd, "r");
 
   if (!f) {
     irc_privmsgf(*msg.irc, msg.chan, "%s: error: %s", msg.nick, strerror(errno));
@@ -30,11 +35,12 @@ void cmd_exec(message_t msg) {
        irc_privmsgf(*msg.irc, msg.chan, "%s: (output too long, aborting)", msg.nick);
        break;
      }
-     /* get rid of trailing newline */
-     line[strlen(line) - 1] = '\0';
 
-     irc_privmsgf(*msg.irc, msg.chan, "%s: %s", msg.nick, line);
+     if(line && strlen(line)) {
+       irc_privmsgf(*msg.irc, msg.chan, "%s: %s", msg.nick, line);
+     }
    }
-
-   pclose(f);
+   
+   if(f)
+     pclose(f);
 }

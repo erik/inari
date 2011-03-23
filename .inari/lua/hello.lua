@@ -11,5 +11,5 @@ function plugin_init ()
 end
 
 function plugin (irc)
-  irc:privmsg(irc.chan, 2, irc.nick .. ": Hello from lua!")
+  irc:privmsg(irc.chan, irc.nick .. ": Hello from lua!")
 end

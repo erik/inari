@@ -160,14 +160,12 @@ int irc_send(irc_server_t irc, char* msg) {
   if(irc.echo) {
     LOG(">> %s", msg);
   }
-  unsigned len = strlen(msg);
-  char* snd = malloc(len + 2);
+  
+  char* nl = "\r\n";
 
-  strcpy(snd, msg);
-  strcat(snd, "\r\n");
+  int size = send(irc.socketfd, msg, strlen(msg), 0);
+  size += send(irc.socketfd, nl, strlen(nl), 0);
 
-  int size = send(irc.socketfd, snd, strlen(snd), 0);
-  free(snd);
   return size;
 }
 
