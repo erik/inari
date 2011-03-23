@@ -21,7 +21,8 @@ enum action {
 
 enum command_type {
   CMD_BUILTIN,
-  CMD_NATIVE
+  CMD_NATIVE,
+  CMD_LUA
 };
 
 typedef struct message {

@@ -1,12 +1,17 @@
 #include "plugin.h"
 #include "command.h"
+#include "luaplugin.h"
 
 char plugin_dir[0x400];
-unsigned num;
+char native_dir[0x400];
+char lua_dir[0x400];
+
+unsigned native_num;
+unsigned lua_num;
 
 static void load_plugin(hashmap_t* map, char* name) {
   char plugin_file[0x400];
-  snprintf(plugin_file, 0x400, "%s/%s", plugin_dir, name);
+  snprintf(plugin_file, 0x400, "%s/%s", native_dir, name);
 
   void *handle = dlopen(plugin_file, RTLD_LOCAL | RTLD_LAZY);
   if(!handle) {
@@ -30,20 +35,22 @@ static void load_plugin(hashmap_t* map, char* name) {
   hashmap_insert(map, h->name, (void*)h);
 
   LOG(">> Loaded plugin %s", name);
-  num++;
+  native_num++;
 }
 
 void init_plugins(hashmap_t* map) {
-  /* only worry about native plugins for now */
-  snprintf(plugin_dir, 0x400, "%s/.inari/native", getenv("HOME"));
-  
-  LOG("Loading plugins from %s... ", plugin_dir);
-  num = 0;
+  snprintf(plugin_dir, 0x400, "%s/.inari", getenv("HOME"));
+  snprintf(native_dir, 0x400, "%s/native", plugin_dir);
+  snprintf(lua_dir, 0x400, "%s/lua", plugin_dir);
+
+  LOG("Loading native plugins from %s... ", native_dir);
+  native_num = 0;
+  lua_num = 0;
 
   DIR *dp;
   struct dirent *ep;
   
-  dp = opendir(plugin_dir);
+  dp = opendir(native_dir);
   if (dp != NULL) {
     while((ep = readdir(dp))) {
       if(!strcmp(ep->d_name, ".") || !strcmp(ep->d_name, "..")) {
@@ -56,6 +63,9 @@ void init_plugins(hashmap_t* map) {
     perror("Couldn't open plugin directory");
   }
 
-  LOG("Loaded %d native plugins.", num);
+  LOG("Loaded %d native plugins.", native_num);
+
+  lua_num = lua_init(map);
+  LOG("Loaded %d lua plugins.", lua_num);
 
 }

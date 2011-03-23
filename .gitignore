@@ -1,3 +1,4 @@
 *.o
 inari
 *.so
+lua-5.1.4/

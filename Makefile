@@ -3,14 +3,24 @@ CHDR := $(shell find include -name "*.h")
 
 COBJ := $(CSRC:.c=.o)
 
+LUA := lua-5.1.4
+LIBLUA := $(LUA)/lib/liblua.a
+
 CC := clang
-CFLAGS := -Wall -Wextra -pedantic -std=c99 -Iinclude/
-LNFLAGS := -ldl -rdynamic
+CFLAGS := -Wall -Wextra -pedantic -std=c99 -Iinclude/ -I$(LUA)/include
+LNFLAGS :=  -ldl -lm -rdynamic $(LIBLUA) 
 EXE := inari
 
 ###
 
-all: $(COBJ) $(EXE) plugs install
+all: $(LUA) $(COBJ) $(EXE) plugs install
+
+$(LUA):
+	@ wget "http://www.lua.org/ftp/$(LUA).tar.gz"
+	@ tar -xvf $(LUA).tar.gz
+	@ rm $(LUA).tar.gz
+	@ echo "Building Lua."
+	@ cd $(LUA); make linux local
 
 install:
 	@ mkdir -p ~/.inari
@@ -18,13 +28,14 @@ install:
 	@ cp -r .inari/* ~/.inari/
 
 plugs:
-	@ mkdir -p .inari/native
+	@ mkdir -p .inari/native .inari/lua
 	@ cd plugins; $(MAKE) all
 	@ cp plugins/*.so .inari/native/
+	@ cp plugins/lua/*.lua .inari/lua/
 
 $(EXE): $(COBJ)
 	@ echo "  LINK" $(EXE)
-	@ $(CC) $(CFLAGS) $(LNFLAGS) $(COBJ) -o $(EXE)
+	@ $(CC) $(COBJ) $(LNFLAGS) -o $(EXE)
 
 %.o: %.c
 	@ echo "  CC" $<

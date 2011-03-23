@@ -1,5 +1,6 @@
 #include "command.h"
 #include "plugin.h"
+#include "luaplugin.h"
 
 hashmap_t* cmd_map;
 
@@ -36,6 +37,9 @@ static void free_cmd(hashnode_t* node) {
     break;
   case CMD_NATIVE:
     dlclose(h->ptr);
+    break;
+  case CMD_LUA:
+    lua_close((lua_State*)h->ptr);
     break;
   }
   free(h);
@@ -137,6 +141,9 @@ void command_handle_msg(irc_server_t* irc, char* msg) {
       case CMD_BUILTIN:
       case CMD_NATIVE:
         handle->fcn(message);
+        break;
+      case CMD_LUA:
+        lua_handle_message(handle, message);
         break;
       }
     } else {
