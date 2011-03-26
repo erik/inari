@@ -36,11 +36,6 @@ irc_server_t connect_to_server(char* server, int port, char* nick) {
   }
 
   LOG("Connected to %s", inet_ntoa(ip_addr));
-
-  /* set as nonblocking */
-  int opts = fcntl(irc.socketfd, F_GETFL);
-  opts = (opts | O_NONBLOCK);
-  fcntl(irc.socketfd, F_SETFL, opts);
   
   irc.socketfd = sockfd;
   irc.status = AUTH;
@@ -143,7 +138,6 @@ void irc_handle_msg(irc_server_t* irc, char* msg) {
   }
 
   command_handle_msg(irc, msg);
-  
 }
 
 void irc_authenticate(irc_server_t irc, char* pass) {

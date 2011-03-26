@@ -9,8 +9,15 @@
 #include <sys/time.h>
 #include <fcntl.h>
 
+#include <pthread.h>
+
+/* connect and run in a new thread */
+void* run_server(void* conf);
+
+/* load up the configuration file */
 config_t* load_configurations();
 
+/* main loop of the bot */
 int run_inari();
 
 #endif /* _RUN_H_ */

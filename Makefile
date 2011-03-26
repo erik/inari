@@ -8,7 +8,7 @@ LIBLUA := $(LUA)/lib/liblua.a
 
 CC := clang
 CFLAGS := -Wall -Wextra -pedantic -std=c99 -Iinclude/ -I$(LUA)/include
-LNFLAGS :=  -ldl -lm -rdynamic $(LIBLUA) 
+LNFLAGS :=  -ldl -lm -rdynamic $(LIBLUA) -lpthread
 EXE := inari
 
 ###
