@@ -16,6 +16,12 @@ static server_config_t* load_default_config() {
   return conf;
 }
 
+#define ERR {                                   \
+  config->status = 1;                           \
+  fclose(fp);                                   \
+  return config;                                \
+  }
+
 config_t* config_load(char* filename) {
   config_t *config = malloc(sizeof(config_t));
 
@@ -24,8 +30,7 @@ config_t* config_load(char* filename) {
   FILE* fp = fopen(filename, "r");
   if(!fp) {
     LOG("Failed to open config file %s", filename);
-    config->status = 1;
-    goto out;
+    ERR;
   }
 
   server_config_t* cur = NULL;
@@ -40,22 +45,25 @@ config_t* config_load(char* filename) {
     unsigned s = strspn(line, " \n");
     line += s;
     if(line[0] == '\0') {
-      goto cont;
+      line_num++;
+      continue;
     }
 
     /* comment */
     if(line[0] == '#') {
-      goto cont;
+      line_num++;
+      continue;
     }
 
     /* server config */
-    if(line[0] == '[') {
+    else if(line[0] == '[') {
       /* save the old server_config first */
       if(cur) {
-        config->num_configs++;
-        config->configs = realloc(config->configs, sizeof(server_config_t*) * config->num_configs);
-        config->configs[config->num_configs - 1] = cur; 
+        config->configs = realloc(config->configs, sizeof(server_config_t*) * (config->num_configs + 1));
+        config->configs[config->num_configs - 1] = cur;
       }
+
+      config->num_configs++;
       line += 1;
       unsigned len = strcspn(line, "]");
       line[len] = '\0';
@@ -69,7 +77,8 @@ config_t* config_load(char* filename) {
       
       cur->server_name = ptr;
 
-      goto cont;
+      line_num++;
+      continue;
     }
 
     /* laziness macros */
@@ -86,8 +95,7 @@ config_t* config_load(char* filename) {
 
       if(line[0] == '\0') {
         LOG("Unexpected EOL on line %d: '%s'", line_num, lbuf);
-        config->status = 1;
-        goto out;
+        ERR;
       }
 
       IF("server") {
@@ -147,33 +155,32 @@ config_t* config_load(char* filename) {
           cur->echo = 0;
         } else {
           LOG("Expected a value of [yn] on line %d, got: %s", line_num, line);
-          config->status = 1;
-          goto out;
+          ERR;
         }
         
       } else {
         LOG("Unrecognized setting on line %d: '%s'", line_num, setting);
-        config->status = 1;
-        goto out;
+        ERR;
       }
       
     } else {
       LOG("Syntax error on line %d: '%s'", line_num, line);
-      config->status = 1;
-      goto out;
+      ERR;
     }
-  cont:
     line_num++;
   }
- out:
+
+  if(config->num_configs) {
+    config->configs[config->num_configs - 1] = cur;
+  }
+  
   fclose(fp);
   return config;
-}
+ }
 
 irc_server_t* config_create_irc(server_config_t* config) {
   irc_server_t *irc = malloc(sizeof(irc_server_t));
-  
-  /* TODO: probable memory leak here */
+
   *irc = connect_to_server(config->server_url, config->port, config->nick);
 
   irc->echo = config->echo;

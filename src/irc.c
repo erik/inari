@@ -62,6 +62,7 @@ void irc_destroy(irc_server_t *irc) {
     free(irc->admins[i]);
   }
   free(irc->admins);
+  free(irc);
 }
 
 void irc_add_admin(irc_server_t* irc, char* nick) {
